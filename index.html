@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#150b05">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Поле">
+<meta name="application-name" content="Поле">
+<meta name="description" content="Тихое поле для засыпания">
+<title>Поле</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+  :root {
+    --slow: 1;
+    --app-height: 100dvh;
+
+    --bg-top: #150b05;
+    --bg-mid: #2e1a0c;
+    --bg-glow: #5a3410;
+    --bg-base: #0a0503;
+
+    --line: rgba(220, 170, 90, 0.45);
+
+    --sprout: #7a6538;
+    --ripe: #c89858;
+    --ready: #e0b070;
+
+    --ring-arc-top: #e0c088;
+    --ring-arc-mid: #c89858;
+    --ring-arc-bottom: #8a6030;
+    --ring-track-top: #150b05;
+    --ring-track-bottom: #3a2210;
+
+    --timer: rgba(216, 184, 136, 0.75);
+
+    --bar-track-top: #150b05;
+    --bar-track-bottom: #2e1a0c;
+    --bar-fill-top: #e0c088;
+    --bar-fill-mid: #c89858;
+    --bar-fill-bottom: #8a6030;
+    --bar-text: rgba(240, 220, 180, 0.90);
+
+    --btn-text: rgba(220, 180, 110, 0.85);
+
+    --glow-warm: rgba(255, 176, 96, 0.08);
+  }
+
+  body[data-palette="fireplace"] {
+    --bg-top: #140802;
+    --bg-mid: #2a1206;
+    --bg-glow: #5a2a0a;
+    --bg-base: #080301;
+
+    --line: rgba(230, 160, 70, 0.50);
+
+    --sprout: #6a5830;
+    --ripe: #c08040;
+    --ready: #dda060;
+
+    --ring-arc-top: #e8b070;
+    --ring-arc-mid: #c08040;
+    --ring-arc-bottom: #804820;
+    --ring-track-top: #140802;
+    --ring-track-bottom: #3a1c08;
+
+    --timer: rgba(224, 176, 116, 0.78);
+
+    --bar-track-top: #140802;
+    --bar-track-bottom: #2a1206;
+    --bar-fill-top: #e8b070;
+    --bar-fill-mid: #c08040;
+    --bar-fill-bottom: #804820;
+    --bar-text: rgba(255, 220, 180, 0.92);
+
+    --btn-text: rgba(230, 180, 100, 0.90);
+
+    --glow-warm: rgba(255, 128, 48, 0.10);
+  }
+
+  body[data-palette="lavender"] {
+    --bg-top: #0f0c14;
+    --bg-mid: #1e1a26;
+    --bg-glow: #2f2a3a;
+    --bg-base: #070509;
+
+    --line: rgba(160, 150, 180, 0.45);
+
+    --sprout: #5a5668;
+    --ripe: #8a7a90;
+    --ready: #a898a8;
+
+    --ring-arc-top: #b8a8b8;
+    --ring-arc-mid: #8a7a90;
+    --ring-arc-bottom: #5a4a5a;
+    --ring-track-top: #0f0c14;
+    --ring-track-bottom: #2a2430;
+
+    --timer: rgba(180, 168, 188, 0.75);
+
+    --bar-track-top: #0f0c14;
+    --bar-track-bottom: #1e1a26;
+    --bar-fill-top: #c0b0c0;
+    --bar-fill-mid: #8a7a90;
+    --bar-fill-bottom: #5a4a5a;
+    --bar-text: rgba(200, 190, 210, 0.88);
+
+    --btn-text: rgba(190, 180, 200, 0.88);
+
+    --glow-warm: rgba(160, 140, 180, 0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    background: #0a0503;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body {
+    width: 100%;
+    height: var(--app-height);
+    overflow: hidden;
+    background: radial-gradient(
+      ellipse at 50% 100%,
+      var(--bg-glow) 0%,
+      var(--bg-mid) 38%,
+      var(--bg-top) 72%,
+      var(--bg-base) 100%
+    );
+    color: var(--line);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-weight: 300;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    cursor: default;
+    transition: background 0.8s ease-in-out;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+    position: relative;
+  }
+
+  body::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(
+        ellipse 80% 50% at 50% 100%,
+        var(--glow-warm) 0%,
+        transparent 75%
+      ),
+      radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.35) 100%);
+    pointer-events: none; z-index: 1;
+    transition: background 0.8s ease-in-out;
+  }
+
+  #stage {
+    position: relative;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    padding: 1.2vh 4vw 1.5vh;
+    z-index: 2;
+    will-change: filter;
+    overflow: hidden;
+  }
+
+  #toggle-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 0.3vh 0 0.9vh;
+    flex: 0 0 auto;
+  }
+
+  .toggle-btn {
+    position: relative;
+    appearance: none;
+    border: none;
+    padding: 0;
+    width: clamp(70px, 11vw, 120px);
+    height: clamp(8px, 1.2vh, 12px);
+    border-radius: 999px;
+    cursor: pointer;
+    background: linear-gradient(to bottom, #3f2a12 0%, #1a1008 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 220, 150, 0.28),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.55),
+      0 1px 3px rgba(0, 0, 0, 0.40);
+    transition: background 0.8s ease-in-out,
+                box-shadow 0.25s ease-out,
+                transform 0.12s ease-out;
+  }
+
+  .toggle-btn::before {
+    content: "";
+    position: absolute;
+    inset: -14px -22px;
+    cursor: pointer;
+  }
+
+  .toggle-btn:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 220, 150, 0.15),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.55),
+      0 1px 2px rgba(0, 0, 0, 0.40);
+  }
+
+  .toggle-btn.open {
+    background: linear-gradient(to bottom, #7a5424 0%, #3f2a12 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 235, 180, 0.50),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.55),
+      0 1px 3px rgba(0, 0, 0, 0.40),
+      0 0 12px rgba(255, 200, 100, 0.30);
+  }
+
+  body[data-palette="lavender"] .toggle-btn {
+    background: linear-gradient(to bottom, #4a4055 0%, #241e2e 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(220, 210, 230, 0.25),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.55),
+      0 1px 3px rgba(0, 0, 0, 0.40);
+  }
+
+  body[data-palette="lavender"] .toggle-btn.open {
+    background: linear-gradient(to bottom, #6a5c78 0%, #3a3244 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(230, 220, 240, 0.45),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.55),
+      0 1px 3px rgba(0, 0, 0, 0.40),
+      0 0 12px rgba(160, 140, 180, 0.35);
+  }
+
+  #progress-wrap {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+
+  #progress-bar {
+    position: relative;
+    width: 100%;
+    height: clamp(28px, 5vh, 46px);
+    border-radius: 999px;
+    overflow: hidden;
+    background: linear-gradient(to bottom, var(--bar-track-top) 0%, var(--bar-track-bottom) 100%);
+    box-shadow:
+      inset 0 3px 6px rgba(0, 0, 0, 0.55),
+      inset 0 -1px 0 rgba(255, 220, 150, 0.10),
+      0 1px 0 rgba(255, 220, 150, 0.06),
+      0 0 24px rgba(255, 180, 80, 0.06);
+    transition: background 0.8s ease-in-out;
+  }
+
+  #progress-fill {
+    position: absolute;
+    inset: 0;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(to bottom,
+      var(--bar-fill-top) 0%,
+      var(--bar-fill-mid) 50%,
+      var(--bar-fill-bottom) 100%);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 245, 210, 0.65),
+      inset 0 -3px 6px rgba(120, 70, 20, 0.45),
+      0 0 18px rgba(255, 200, 100, 0.35);
+    transition: width calc(1.6s * var(--slow)) cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.8s ease-in-out;
+  }
+
+  #progress-fill::after {
+    content: "";
+    position: absolute;
+    left: 6px; right: 6px; top: 4px;
+    height: 30%;
+    border-radius: 999px;
+    background: linear-gradient(to bottom, rgba(255, 248, 220, 0.55), rgba(255, 248, 220, 0));
+    pointer-events: none;
+  }
+
+  #progress-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(12px, 1.9vh, 20px);
+    letter-spacing: 0.08em;
+    font-style: italic;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--bar-text);
+    text-shadow:
+      0 -1px 0 rgba(120, 80, 30, 0.55),
+      0 1px 0 rgba(60, 40, 15, 0.85),
+      0 2px 4px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+    z-index: 2;
+    transition: color 0.8s ease-in-out;
+  }
+
+  #test-rows {
+    flex: 0 0 auto;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease-in-out, visibility 0s 0.35s;
+  }
+
+  #test-rows.open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.35s ease-in-out, visibility 0s;
+  }
+
+  .test-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7vw;
+    padding: 0.5vh 0 0.2vh;
+  }
+
+  .test-row:first-of-type { padding-top: 0.7vh; }
+  .test-row:last-of-type { padding-bottom: 0.4vh; }
+
+  .test-row-label {
+    flex: 0 0 auto;
+    padding-right: 0.8vw;
+    font-size: clamp(10px, 1.6vh, 16px);
+    letter-spacing: 0.08em;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--bar-text);
+    text-shadow:
+      0 -1px 0 rgba(120, 80, 30, 0.55),
+      0 1px 0 rgba(60, 40, 15, 0.85),
+      0 2px 4px rgba(0, 0, 0, 0.55);
+    white-space: nowrap;
+    transition: color 0.8s ease-in-out;
+  }
+
+  .test-row-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6vw;
+    flex: 1 1 auto;
+  }
+
+  .test-btn {
+    appearance: none;
+    border: 1px solid rgba(166, 122, 58, 0.60);
+    border-radius: 9px;
+    padding: 0.35vh 0.9vw;
+    min-width: 3.8vw;
+    height: clamp(24px, 3.6vh, 34px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: inherit;
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(10px, 1.3vh, 13px);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    color: var(--btn-text);
+    background: linear-gradient(to bottom, #3f2a12 0%, #1a1008 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 220, 150, 0.15),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.55),
+      0 2px 4px rgba(0, 0, 0, 0.40);
+    text-shadow:
+      0 -1px 0 rgba(255, 235, 200, 0.15),
+      0 1px 1px rgba(0, 0, 0, 0.65);
+    transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, color 0.12s ease-out;
+    -webkit-user-select: none; user-select: none;
+  }
+
+  .test-btn:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 220, 150, 0.08),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.6),
+      0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  .test-btn.active {
+    color: rgba(255, 240, 200, 0.98);
+    background: linear-gradient(to bottom, #7a5424 0%, #3f2a12 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 235, 180, 0.35),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.55),
+      0 2px 4px rgba(0, 0, 0, 0.40),
+      0 0 14px rgba(255, 200, 100, 0.25);
+  }
+
+  body[data-palette="lavender"] .test-btn {
+    border-color: rgba(130, 120, 150, 0.60);
+    background: linear-gradient(to bottom, #3a3244 0%, #181420 100%);
+  }
+
+  body[data-palette="lavender"] .test-btn.active {
+    color: rgba(230, 220, 240, 0.98);
+    background: linear-gradient(to bottom, #4a4055 0%, #241e2e 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(220, 210, 230, 0.30),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.55),
+      0 2px 4px rgba(0, 0, 0, 0.40),
+      0 0 14px rgba(160, 140, 180, 0.30);
+  }
+
+  .test-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    transform: none;
+  }
+
+  #plots {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2.5%;
+    align-items: center;
+    padding: 0.6vh 2vw 0.8vh;
+  }
+
+  .plot {
+    aspect-ratio: 1;
+    width: 100%;
+    max-height: 100%;
+    justify-self: center;
+    align-self: center;
+    cursor: pointer;
+  }
+
+  .plot svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+  .plot .plus {
+    transition: opacity calc(1.2s * var(--slow)) ease-in-out,
+                stroke 0.8s ease-in-out;
+  }
+  .plot .wheat {
+    transition: opacity calc(1.5s * var(--slow)) ease-in-out,
+                color calc(2s * var(--slow)) ease-in-out;
+    transform-origin: 240px 400px;
+  }
+  .plot .ring {
+    opacity: 0;
+    transition: opacity calc(1.2s * var(--slow)) ease-in-out;
+  }
+  .plot .timer {
+    opacity: 0;
+    transition: opacity calc(1.2s * var(--slow)) ease-in-out,
+                fill 0.8s ease-in-out;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+  }
+
+  .plot[data-state="empty"] .plus { opacity: 1; }
+  .plot[data-state="empty"] .wheat { opacity: 0; transform: scale(0.15); }
+  .plot[data-state="empty"] .ring { opacity: 0; }
+  .plot[data-state="empty"] .timer { opacity: 0; }
+
+  .plot[data-state="growing"] .plus,
+  .plot[data-state="ready"] .plus { opacity: 0; }
+
+  .plot[data-state="growing"] .wheat,
+  .plot[data-state="ready"] .wheat { opacity: 1; }
+
+  .plot[data-state="growing"] .ring,
+  .plot[data-state="ready"] .ring { opacity: 1; }
+
+  .plot[data-state="growing"] .timer { opacity: 1; }
+  .plot[data-state="ready"] .timer { opacity: 0; }
+
+  body.late-session .plot[data-state="growing"] .timer {
+    opacity: 0 !important;
+  }
+
+  #dim {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.4) 0%, black 100%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 4;
+    transition: opacity 4s ease-in-out;
+  }
+
+  #rotate-hint {
+    display: none;
+    position: fixed; inset: 0;
+    background: var(--bg-top);
+    color: var(--line);
+    align-items: center; justify-content: center;
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    z-index: 20;
+    text-transform: uppercase;
+    padding: 20px;
+    text-align: center;
+  }
+
+  @media (orientation: portrait) and (max-width: 700px) {
+    #rotate-hint { display: flex; }
+  }
+</style>
+</head>
+<body data-palette="candle">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="ringTrack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="var(--ring-track-top)"/>
+      <stop offset="100%" stop-color="var(--ring-track-bottom)"/>
+    </linearGradient>
+
+    <linearGradient id="ringArc" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="var(--ring-arc-top)"/>
+      <stop offset="55%"  stop-color="var(--ring-arc-mid)"/>
+      <stop offset="100%" stop-color="var(--ring-arc-bottom)"/>
+    </linearGradient>
+
+    <filter id="plotShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#000" flood-opacity="0.40"/>
+    </filter>
+
+    <filter id="ringShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.2" flood-color="#000" flood-opacity="0.75"/>
+    </filter>
+
+    <filter id="ringGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="0" stdDeviation="1.6" flood-color="#ffd070" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+</svg>
+
+<div id="stage">
+
+  <div id="toggle-wrap">
+    <button id="toggle-tests" class="toggle-btn" aria-label="Показать тесты"></button>
+  </div>
+
+  <div id="progress-wrap">
+    <div id="progress-bar">
+      <div id="progress-fill"></div>
+      <div id="progress-text">0 / 10</div>
+    </div>
+  </div>
+
+  <div id="test-rows">
+    <div class="test-row">
+      <span class="test-row-label">для тестов</span>
+      <div class="test-row-buttons">
+        <button class="test-btn speed-btn" data-speed="1" title="Обычная скорость">×1</button>
+        <button class="test-btn speed-btn" data-speed="2" title="Скорость ×2">×2</button>
+        <button class="test-btn speed-btn" data-speed="3" title="Скорость ×3">×3</button>
+        <button class="test-btn speed-btn" data-speed="4" title="Скорость ×4">×4</button>
+        <button class="test-btn speed-btn" data-speed="5" title="Скорость ×5">×5</button>
+        <button class="test-btn speed-btn" data-speed="10" title="Скорость ×10">×10</button>
+        <button class="test-btn" id="btn-finish" title="Завершить рост всех растений">✓</button>
+        <button class="test-btn" id="btn-90" title="Заполнить счётчик до 90% порога">90%</button>
+        <button class="test-btn" id="btn-0" title="Обнулить счётчик до начала порога">0%</button>
+        <button class="test-btn" id="btn-next" title="Перейти на следующий порог">→</button>
+        <button class="test-btn" id="btn-prev" title="Вернуться на прошлый порог">←</button>
+      </div>
+    </div>
+
+    <div class="test-row">
+      <span class="test-row-label">тест эффектов</span>
+      <div class="test-row-buttons">
+        <button class="test-btn session-btn" data-min="0" title="Сессия только началась — без эффектов">0м</button>
+        <button class="test-btn session-btn" data-min="5" title="5 минут — лёгкое потепление">5м</button>
+        <button class="test-btn session-btn" data-min="10" title="10 минут — половина эффектов">10м</button>
+        <button class="test-btn session-btn" data-min="15" title="15 минут — гаснут таймеры">15м</button>
+        <button class="test-btn session-btn" data-min="20" title="20 минут — полный эффект сна">20м</button>
+        <button class="test-btn" id="btn-reset-session" title="Сбросить сессию в начало">↺</button>
+      </div>
+    </div>
+
+    <div class="test-row">
+      <span class="test-row-label">тест палитр</span>
+      <div class="test-row-buttons">
+        <button class="test-btn palette-btn" data-palette="candle" title="Свеча — тёплый тёмный янтарь">свеча</button>
+        <button class="test-btn palette-btn" data-palette="fireplace" title="Камин — оранжевый">камин</button>
+        <button class="test-btn palette-btn" data-palette="lavender" title="Лаванда — холодная ночь">лаванда</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="plots"></div>
+</div>
+
+<div id="dim"></div>
+<div id="rotate-hint">поверни экран горизонтально</div>
+
+<script>
+(function () {
+  'use strict';
+
+  function updateAppHeight() {
+    let h;
+    if (window.visualViewport) {
+      h = window.visualViewport.height;
+    } else {
+      h = window.innerHeight;
+    }
+    document.documentElement.style.setProperty('--app-height', Math.round(h) + 'px');
+  }
+
+  updateAppHeight();
+  window.addEventListener('resize', updateAppHeight);
+  window.addEventListener('orientationchange', () => setTimeout(updateAppHeight, 120));
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateAppHeight);
+    window.visualViewport.addEventListener('scroll', updateAppHeight);
+  }
+  setTimeout(updateAppHeight, 300);
+  setTimeout(updateAppHeight, 1000);
+
+  const PLOT_COUNT = 4;
+  const THRESHOLDS = [10, 20, 30, 40, 50, 100, 150, 200, 300, 400, 500, 700, 1000];
+
+  const SLOW_FULL_AT_MIN = 20;
+  const BREATH_PERIOD = 10;
+  const BREATH_INHALE = 4;
+  const BREATH_AMPLITUDE = 0.02;
+  const WARM_FULL_AT_MIN = 20;
+  const TIMERS_HIDE_AT_MIN = 15;
+
+  const urlParams = new URLSearchParams(location.search);
+  let speedMultiplier = Math.max(0.1, parseFloat(urlParams.get('speed')) || 1);
+
+  function randomBaseGrowMs() {
+    const r = Math.random();
+    let min;
+    if (r < 0.05) min = 1;
+    else if (r < 0.15) min = 2;
+    else if (r < 0.35) min = 3;
+    else if (r < 0.70) min = 4;
+    else min = 5;
+    const jitter = (Math.random() - 0.5) * 0.5;
+    const ms = (min + jitter) * 60 * 1000;
+    return Math.max(60 * 1000, Math.min(5 * 60 * 1000, ms));
+  }
+
+  function randomGrowMs() {
+    return randomBaseGrowMs() / speedMultiplier;
+  }
+
+  const state = {
+    total: 0,
+    plots: Array.from({ length: PLOT_COUNT }, () => ({
+      status: 'empty',
+      startedAt: 0,
+      duration: 0,
+    })),
+    sessionStartedAt: Date.now(),
+    lastSlowValue: null,
+    lateSession: false,
+  };
+
+  function safeGet(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function safeSet(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) {}
+  }
+
+  const saved = safeGet('pole_total');
+  if (saved) state.total = Math.max(0, parseInt(saved, 10) || 0);
+
+  function persist() {
+    safeSet('pole_total', String(state.total));
+  }
+
+  function thresholds() {
+    for (let i = 0; i < THRESHOLDS.length; i++) {
+      if (state.total < THRESHOLDS[i]) {
+        return {
+          lower: i === 0 ? 0 : THRESHOLDS[i - 1],
+          upper: THRESHOLDS[i],
+          index: i,
+        };
+      }
+    }
+    const last = THRESHOLDS[THRESHOLDS.length - 1];
+    return { lower: last, upper: last, index: THRESHOLDS.length - 1 };
+  }
+
+  const RING_R = 30;
+  const RING_CX = 392;
+  const RING_CY = 94;
+  const RING_C = 2 * Math.PI * RING_R;
+
+  function plotMarkup() {
+    return `
+      <svg viewBox="-40 -40 560 560" preserveAspectRatio="xMidYMid meet">
+        <g filter="url(#plotShadow)">
+          <rect x="0" y="0" width="480" height="480" rx="70"
+                fill="#3a2814"
+                stroke="#7a5424"
+                stroke-width="2"
+                class="plot-rim"/>
+          <rect x="14" y="14" width="452" height="452" rx="58"
+                fill="#120b05"
+                class="plot-face"/>
+        </g>
+
+        <g class="plus" stroke="var(--line)" stroke-width="6" stroke-linecap="round">
+          <line x1="200" y1="240" x2="280" y2="240"/>
+          <line x1="240" y1="200" x2="240" y2="280"/>
+        </g>
+
+        <g class="wheat" style="color: var(--sprout);">
+          <path d="M 240 400 Q 236 300, 244 200"
+                fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+          <path d="M 240 330 Q 180 310, 165 265"
+                fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M 240 290 Q 300 265, 315 220"
+                fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <g fill="currentColor">
+            <ellipse cx="222" cy="205" rx="9" ry="15"/>
+            <ellipse cx="258" cy="205" rx="9" ry="15"/>
+            <ellipse cx="240" cy="188" rx="9" ry="15"/>
+            <ellipse cx="222" cy="173" rx="9" ry="15"/>
+            <ellipse cx="258" cy="173" rx="9" ry="15"/>
+            <ellipse cx="240" cy="157" rx="9" ry="15"/>
+            <ellipse cx="240" cy="138" rx="7" ry="12"/>
+          </g>
+        </g>
+
+        <text class="timer"
+              x="240" y="${RING_CY}"
+              text-anchor="middle"
+              dominant-baseline="central"
+              fill="var(--timer)"
+              font-size="42"
+              font-weight="300"
+              font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">0:00</text>
+
+        <g class="ring" filter="url(#ringShadow)">
+          <circle cx="${RING_CX}" cy="${RING_CY + 2}" r="${RING_R}"
+                  fill="none" stroke="rgba(0,0,0,0.85)" stroke-width="9"/>
+          <circle cx="${RING_CX}" cy="${RING_CY}" r="${RING_R}"
+                  fill="none" stroke="rgba(255,220,150,0.18)" stroke-width="9"/>
+          <circle cx="${RING_CX}" cy="${RING_CY}" r="${RING_R}"
+                  fill="none" stroke="url(#ringTrack)" stroke-width="7"/>
+          <circle cx="${RING_CX}" cy="${RING_CY}" r="${RING_R}"
+                  fill="none" stroke="rgba(0,0,0,0.55)" stroke-width="7"
+                  stroke-dasharray="${RING_C} ${RING_C}"
+                  stroke-dashoffset="${RING_C * 0.5}"
+                  transform="rotate(180 ${RING_CX} ${RING_CY})"/>
+          <circle class="ring-arc" cx="${RING_CX}" cy="${RING_CY}" r="${RING_R}"
+                  fill="none" stroke="url(#ringArc)" stroke-width="6"
+                  stroke-linecap="round"
+                  transform="rotate(-90 ${RING_CX} ${RING_CY})"
+                  stroke-dasharray="${RING_C}"
+                  stroke-dashoffset="${RING_C}"/>
+          <circle class="ring-arc" cx="${RING_CX}" cy="${RING_CY - 1.2}" r="${RING_R}"
+                  fill="none" stroke="rgba(255,248,215,0.70)" stroke-width="2"
+                  stroke-linecap="round"
+                  transform="rotate(-90 ${RING_CX} ${RING_CY})"
+                  stroke-dasharray="${RING_C}"
+                  stroke-dashoffset="${RING_C}"
+                  filter="url(#ringGlow)"/>
+        </g>
+      </svg>
+    `;
+  }
+
+  const stageEl = document.getElementById('stage');
+  const plotsEl = document.getElementById('plots');
+  const fillEl = document.getElementById('progress-fill');
+  const textEl = document.getElementById('progress-text');
+  const dimEl = document.getElementById('dim');
+  const btnFinish = document.getElementById('btn-finish');
+  const btn90 = document.getElementById('btn-90');
+  const btn0 = document.getElementById('btn-0');
+  const btnNext = document.getElementById('btn-next');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnResetSession = document.getElementById('btn-reset-session');
+  const toggleBtn = document.getElementById('toggle-tests');
+  const testRows = document.getElementById('test-rows');
+  const speedBtns = Array.from(document.querySelectorAll('.speed-btn'));
+  const sessionBtns = Array.from(document.querySelectorAll('.session-btn'));
+  const paletteBtns = Array.from(document.querySelectorAll('.palette-btn'));
+
+  const plotEls = [];
+
+  for (let i = 0; i < PLOT_COUNT; i++) {
+    const el = document.createElement('div');
+    el.className = 'plot';
+    el.dataset.state = 'empty';
+    el.dataset.index = String(i);
+    el.innerHTML = plotMarkup();
+    el.addEventListener('click', () => onPlotClick(i));
+    plotsEl.appendChild(el);
+    plotEls.push(el);
+  }
+
+  function setRingProgress(i, t) {
+    const offset = RING_C * (1 - t);
+    const arcs = plotEls[i].querySelectorAll('.ring-arc');
+    for (let k = 0; k < arcs.length; k++) {
+      arcs[k].setAttribute('stroke-dashoffset', String(offset));
+    }
+  }
+
+  function onPlotClick(i) {
+    const p = state.plots[i];
+    if (p.status === 'empty') {
+      p.status = 'growing';
+      p.startedAt = Date.now();
+      p.duration = randomGrowMs();
+      setRingProgress(i, 0);
+      updatePlotState(i);
+    } else if (p.status === 'ready') {
+      p.status = 'empty';
+      state.total += 1;
+      persist();
+      updateProgress();
+      updatePlotState(i);
+    }
+  }
+
+  function updatePlotState(i) {
+    plotEls[i].dataset.state = state.plots[i].status;
+  }
+
+  function updateProgress() {
+    const { lower, upper } = thresholds();
+    textEl.textContent = `${state.total} / ${upper}`;
+    const span = Math.max(1, upper - lower);
+    const value = Math.max(0, Math.min(1, (state.total - lower) / span));
+    fillEl.style.width = (value * 100).toFixed(2) + '%';
+    btnPrev.disabled = (lower === 0);
+  }
+
+  function formatTime(ms) {
+    const total = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return m + ':' + (s < 10 ? '0' + s : s);
+  }
+
+  let lastFilterUpdate = 0;
+
+  function applySleepEffects(now) {
+    const sessionSec = (now - state.sessionStartedAt) / 1000;
+    const sessionMin = sessionSec / 60;
+
+    const slowProgress = Math.min(1, sessionMin / SLOW_FULL_AT_MIN);
+    const slowValue = 1 + slowProgress;
+    if (state.lastSlowValue === null || Math.abs(slowValue - state.lastSlowValue) > 0.02) {
+      document.documentElement.style.setProperty('--slow', slowValue.toFixed(3));
+      state.lastSlowValue = slowValue;
+    }
+
+    if (!state.lateSession && sessionMin >= TIMERS_HIDE_AT_MIN) {
+      document.body.classList.add('late-session');
+      state.lateSession = true;
+    }
+
+    if (now - lastFilterUpdate > 80) {
+      lastFilterUpdate = now;
+
+      const breathT = sessionSec % BREATH_PERIOD;
+      let breathAmt;
+      if (breathT < BREATH_INHALE) {
+        breathAmt = breathT / BREATH_INHALE;
+      } else {
+        breathAmt = 1 - (breathT - BREATH_INHALE) / (BREATH_PERIOD - BREATH_INHALE);
+      }
+      const brightness = 1 - BREATH_AMPLITUDE * (1 - breathAmt);
+
+      const warmProgress = Math.min(1, sessionMin / WARM_FULL_AT_MIN);
+      const sepia = 0.18 * warmProgress;
+      const hue = -8 * warmProgress;
+      const saturate = 1 + 0.10 * warmProgress;
+
+      stageEl.style.filter =
+        `brightness(${brightness.toFixed(4)}) ` +
+        `sepia(${sepia.toFixed(3)}) ` +
+        `hue-rotate(${hue.toFixed(2)}deg) ` +
+        `saturate(${saturate.toFixed(3)})`;
+    }
+
+    return { sessionMin };
+  }
+
+  function tick() {
+    const now = Date.now();
+    const { sessionMin } = applySleepEffects(now);
+
+    for (let i = 0; i < PLOT_COUNT; i++) {
+      const p = state.plots[i];
+      if (p.status !== 'growing') continue;
+
+      const remaining = p.duration - (now - p.startedAt);
+      const t = Math.min(1, Math.max(0, (now - p.startedAt) / p.duration));
+
+      const wheatEl = plotEls[i].querySelector('.wheat');
+      const timerEl = plotEls[i].querySelector('.timer');
+
+      wheatEl.style.transform = `scale(${0.15 + 0.85 * t})`;
+
+      if (t < 0.7) wheatEl.style.color = 'var(--sprout)';
+      else if (t < 1) wheatEl.style.color = 'var(--ripe)';
+      else wheatEl.style.color = 'var(--ready)';
+
+      setRingProgress(i, t);
+      timerEl.textContent = formatTime(remaining);
+
+      if (t >= 1 && p.status === 'growing') {
+        p.status = 'ready';
+        updatePlotState(i);
+      }
+    }
+
+    const dim = Math.min(0.20, Math.floor(sessionMin / 5) * 0.05);
+    dimEl.style.opacity = String(dim);
+
+    requestAnimationFrame(tick);
+  }
+
+  function setSpeed(newSpeed) {
+    if (newSpeed === speedMultiplier) return;
+    const ratio = speedMultiplier / newSpeed;
+    const now = Date.now();
+
+    for (const p of state.plots) {
+      if (p.status === 'growing') {
+        const elapsed = now - p.startedAt;
+        const remaining = Math.max(0, p.duration - elapsed);
+        p.duration = elapsed + remaining * ratio;
+      }
+    }
+
+    speedMultiplier = newSpeed;
+
+    for (const b of speedBtns) {
+      const s = parseFloat(b.dataset.speed);
+      b.classList.toggle('active', Math.abs(s - newSpeed) < 0.001);
+    }
+  }
+
+  speedBtns.forEach(b => {
+    b.addEventListener('click', () => {
+      setSpeed(parseFloat(b.dataset.speed));
+    });
+  });
+
+  function jumpToMinute(min) {
+    state.sessionStartedAt = Date.now() - min * 60 * 1000;
+    state.lastSlowValue = null;
+    state.lateSession = false;
+    document.body.classList.remove('late-session');
+    lastFilterUpdate = 0;
+
+    for (const b of sessionBtns) {
+      const m = parseFloat(b.dataset.min);
+      b.classList.toggle('active', Math.abs(m - min) < 0.001);
+    }
+  }
+
+  sessionBtns.forEach(b => {
+    b.addEventListener('click', () => {
+      jumpToMinute(parseFloat(b.dataset.min));
+    });
+  });
+
+  btnResetSession.addEventListener('click', () => {
+    jumpToMinute(0);
+    for (const b of sessionBtns) {
+      b.classList.toggle('active', false);
+    }
+  });
+
+  function setPalette(name) {
+    document.body.dataset.palette = name;
+    safeSet('pole_palette', name);
+    for (const b of paletteBtns) {
+      b.classList.toggle('active', b.dataset.palette === name);
+    }
+    const themeColor = name === 'lavender' ? '#0f0c14'
+                     : name === 'fireplace' ? '#140802'
+                     : '#150b05';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', themeColor);
+  }
+
+  paletteBtns.forEach(b => {
+    b.addEventListener('click', () => setPalette(b.dataset.palette));
+  });
+
+  toggleBtn.addEventListener('click', () => {
+    const open = testRows.classList.toggle('open');
+    toggleBtn.classList.toggle('open', open);
+    toggleBtn.setAttribute('aria-label', open ? 'Скрыть тесты' : 'Показать тесты');
+    setTimeout(updateAppHeight, 60);
+  });
+
+  btnFinish.addEventListener('click', () => {
+    const now = Date.now();
+    for (let i = 0; i < PLOT_COUNT; i++) {
+      const p = state.plots[i];
+      if (p.status === 'growing') {
+        p.startedAt = now - p.duration;
+        p.status = 'ready';
+        setRingProgress(i, 1);
+        const wheatEl = plotEls[i].querySelector('.wheat');
+        wheatEl.style.transform = 'scale(1)';
+        wheatEl.style.color = 'var(--ready)';
+        updatePlotState(i);
+      }
+    }
+  });
+
+  btn90.addEventListener('click', () => {
+    const { lower, upper } = thresholds();
+    const span = upper - lower;
+    state.total = lower + Math.floor(span * 0.9);
+    persist();
+    updateProgress();
+  });
+
+  btn0.addEventListener('click', () => {
+    const { lower } = thresholds();
+    state.total = lower;
+    persist();
+    updateProgress();
+  });
+
+  btnNext.addEventListener('click', () => {
+    const { upper } = thresholds();
+    state.total = upper;
+    persist();
+    updateProgress();
+  });
+
+  btnPrev.addEventListener('click', () => {
+    const { lower } = thresholds();
+    if (lower === 0) return;
+    state.total = Math.max(0, lower - 1);
+    persist();
+    updateProgress();
+  });
+
+  let savedPalette = 'candle';
+  const p = safeGet('pole_palette');
+  if (p && ['candle', 'fireplace', 'lavender'].includes(p)) savedPalette = p;
+  setPalette(savedPalette);
+
+  updateProgress();
+  for (let i = 0; i < PLOT_COUNT; i++) updatePlotState(i);
+  for (const b of speedBtns) {
+    const s = parseFloat(b.dataset.speed);
+    b.classList.toggle('active', Math.abs(s - speedMultiplier) < 0.001);
+  }
+  requestAnimationFrame(tick);
+
+  document.addEventListener('gesturestart', e => e.preventDefault());
+
+  // ─── Регистрация Service Worker для офлайн-работы ──────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        console.log('[PWA] Service worker зарегистрирован:', reg.scope);
+      }).catch(err => {
+        console.warn('[PWA] Регистрация sw.js не удалась:', err);
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>
